@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Hex Spelling Bee – Multi Theme</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   BASE COLORS (DEFAULT THEME)
+   ============================================================ */
+:root {
+    --bg: #ffffff;
+    --text: #222;
+    --hex-fill: #f7f7f7;
+    --hex-center: #ffcf33;
+    --accent: #333;
+    --good: #4caf50;
+    --bad: #e53935;
+}
+
+/* ============================================================
+   THEMES
+   ============================================================ */
+
+/* Forest */
+.theme-forest {
+    --bg: #2b3a2f;
+    --text: #e6f5e6;
+    --hex-fill: #3c4d3e;
+    --hex-center: #8bc34a;
+    --accent: #aed581;
+}
+
+/* Edurary Blue */
+.theme-edurary {
+    --bg: #f7f9fa;
+    --text: #222;
+    --hex-fill: #e1ecfa;
+    --hex-center: #0070c7;
+    --accent: #1e90ff;
+}
+
+/* NYT Classic */
+.theme-nyt {
+    --bg: #ffffff;
+    --text: #111;
+    --hex-fill: #f2f2f2;
+    --hex-center: #ffcf33;
+    --accent: #222;
+}
+
+/* Dark Mode */
+.theme-dark {
+    --bg: #1e1e2e;
+    --text: #cdd6f4;
+    --hex-fill: #45475a;
+    --hex-center: #fab387;
+    --accent: #89b4fa;
+}
+
+/* Neon */
+.theme-neon {
+    --bg: #000;
+    --text: #fff;
+    --hex-fill: #111;
+    --hex-center: #ff0088;
+    --accent: #00eaff;
+}
+
+/* ============================================================
+   GENERAL LAYOUT
+   ============================================================ */
+body {
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 20px;
+    font-family: "Poppins", sans-serif;
+    text-align: center;
+}
+
+h1 {
+    font-size: 34px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+
+.theme-select {
+    margin-bottom: 20px;
+}
+
+.theme-select select {
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+/* ============================================================
+   HONEYCOMB CONTAINER
+   ============================================================ */
+.honeycomb {
+    width: 320px;
+    margin: 20px auto;
+    position: relative;
+}
+
+.hex {
+    width: 90px;
+    height: 104px; /* true hex vertical scaling */
+    position: absolute;
+    cursor: pointer;
+    user-select: none;
+    transition: 0.15s ease;
+}
+
+.hex text {
+    font-size: 34px;
+    font-weight: 800;
+    fill: var(--text);
+    pointer-events: none;
+}
+
+.hex polygon {
+    fill: var(--hex-fill);
+    stroke: var(--accent);
+    stroke-width: 3;
+    transition: 0.15s ease;
+}
+
+.hex-center polygon {
+    fill: var(--hex-center);
+}
+
+/* hover */
+.hex:hover polygon {
+    fill: var(--accent);
+}
+.hex:hover text {
+    fill: #fff;
+}
+
+/* ============================================================
+   INPUT + KEYBOARD
+   ============================================================ */
+#wordInput {
+    width: 70%;
+    padding: 14px;
+    font-size: 20px;
+    border-radius: 8px;
+    border: none;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.keyboard {
+    margin-top: 20px;
+}
+
+.k-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+
+.key {
+    background: var(--hex-fill);
+    padding: 12px 18px;
+    margin: 3px;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.key:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* ============================================================
+   FOUND WORDS
+   ============================================================ */
+#foundList {
+    max-width: 320px;
+    margin: 20px auto;
+    text-align: left;
+    font-size: 18px;
+}
+
+.msg {
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+</style>
+</head>
+
+<body class="theme-forest">
+
+<h1>Hex Spelling Bee</h1>
+
+<div class="theme-select">
+    <select id="themeSelect">
+        <option value="theme-forest">Forest</option>
+        <option value="theme-edurary">Edurary Blue</option>
+        <option value="theme-nyt">NYT Yellow</option>
+        <option value="theme-dark">Dark</option>
+        <option value="theme-neon">Neon</option>
+    </select>
+</div>
+
+<!-- ============================================================
+     PERFECT NYT-STYLE HONEYCOMB (SVG)
+     ============================================================ -->
+<div class="honeycomb" id="honeycomb">
+
+    <!-- Hex positions (absolute) -->
+    <!-- Row 1 -->
+    <div class="hex" data-index="0" style="top:0px; left:115px;"></div>
+    <div class="hex" data-index="1" style="top:60px; left:35px;"></div>
+    <div class="hex" data-index="2" style="top:60px; left:195px;"></div>
+
+    <!-- Center -->
+    <div class="hex hex-center" data-index="3" style="top:120px; left:115px;"></div>
+
+    <!-- Row 3 -->
+    <div class="hex" data-index="4" style="top:180px; left:35px;"></div>
+    <div class="hex" data-index="5" style="top:180px; left:195px;"></div>
+
+    <!-- Bottom -->
+    <div class="hex" data-index="6" style="top:240px; left:115px;"></div>
+
+</div>
+
+<!-- Input -->
+<input id="wordInput" placeholder="Enter a word..." />
+
+<!-- Keyboard -->
+<div class="keyboard" id="keyboard"></div>
+
+<!-- Found words -->
+<div id="foundList"></div>
+
+<script>
+/* ============================================================
+   SVG HEX BUILDER
+   ============================================================ */
+
+const letters = ["A", "B", "C", "D", "E", "F", "G"]; 
+const centerIndex = 3;
+
+function drawHex(div, letter, isCenter=false) {
+    div.innerHTML = `
+        <svg width="90" height="104" viewBox="0 0 90 104">
+            <polygon points="45,0 87,26 87,78 45,104 3,78 3,26"></polygon>
+            <text x="45" y="58" text-anchor="middle">${letter}</text>
+        </svg>
+    `;
+}
+
+/* Initialize hex tiles */
+document.querySelectorAll(".hex").forEach(hex => {
+    const index = +hex.dataset.index;
+    const letter = letters[index];
+    const isCenter = index === centerIndex;
+
+    if (isCenter) hex.classList.add("hex-center");
+
+    drawHex(hex, letter, isCenter);
+
+    hex.addEventListener("click", () => {
+        const inp = document.getElementById("wordInput");
+        inp.value += letter.toLowerCase();
+    });
+});
+
+/* ============================================================
+   THEME SELECTOR
+   ============================================================ */
+document.getElementById("themeSelect").addEventListener("change", e => {
+    document.body.className = e.target.value;
+});
+
+/* ============================================================
+   KEYBOARD
+   ============================================================ */
+const keyboardRows = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
+
+function buildKeyboard() {
+    const kb = document.getElementById("keyboard");
+    kb.innerHTML = "";
+
+    keyboardRows.forEach(row => {
+        const div = document.createElement("div");
+        div.className = "k-row";
+        row.split("").forEach(char => {
+            const k = document.createElement("div");
+            k.className = "key";
+            k.textContent = char.toUpperCase();
+            k.onclick = () => {
+                const inp = document.getElementById("wordInput");
+                inp.value += char;
+            };
+            div.appendChild(k);
+        });
+        kb.appendChild(div);
+    });
+
+    // Control row
+    const div = document.createElement("div");
+    div.className = "k-row";
+
+    const enter = document.createElement("div");
+    enter.className = "key";
+    enter.textContent = "ENTER";
+    enter.onclick = checkWord;
+
+    const back = document.createElement("div");
+    back.className = "key";
+    back.textContent = "⌫";
+    back.onclick = () => {
+        const inp = document.getElementById("wordInput");
+        inp.value = inp.value.slice(0, -1);
+    };
+
+    div.appendChild(enter);
+    div.appendChild(back);
+    kb.appendChild(div);
+}
+buildKeyboard();
+
+/* ============================================================
+   DICTIONARY LOADING
+   ============================================================ */
+
+let DICT = [];
+
+fetch("dictionary.json")
+    .then(r => r.json())
+    .then(data => {
+        DICT = data.words;
+        console.log("Loaded", data.count, "words.");
+    });
+
+/* ============================================================
+   WORD CHECKING
+   ============================================================ */
+let found = [];
+let score = 0;
+
+document.getElementById("wordInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") checkWord();
+});
+
+function checkWord() {
+    let word = document.getElementById("wordInput").value.trim().toLowerCase();
+    document.getElementById("wordInput").value = "";
+    if (!word) return;
+
+    if (word.length < 4)
+        return showMsg(`${word.toUpperCase()} — too short`);
+
+    if (!word.includes(letters[centerIndex].toLowerCase()))
+        return showMsg(`${word.toUpperCase()} — missing center letter`);
+
+    if (!DICT.includes(word))
+        return showMsg(`${word.toUpperCase()} — not in dictionary`);
+
+    if (found.includes(word))
+        return showMsg(`${word.toUpperCase()} — already found`);
+
+    found.push(word);
+
+    let pts = word.length;
+    if (isPangram(word)) pts += 10;
+
+    score += pts;
+    updateFound();
+    showMsg(`${word.toUpperCase()} ✓ +${pts}`);
+}
+
+function isPangram(word) {
+    return letters.every(l => word.includes(l.toLowerCase()));
+}
+
+/* ============================================================
+   UI UPDATES
+   ============================================================ */
+function updateFound() {
+    const box = document.getElementById("foundList");
+    box.innerHTML = `<strong>Score:</strong> ${score}<br><br>` +
+        found.map(w => `• ${w}`).join("<br>");
+}
+
+function showMsg(txt) {
+    const box = document.getElementById("foundList");
+    const div = document.createElement("div");
+    div.className = "msg";
+    div.textContent = txt;
+    box.prepend(div);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Custom Hex Spelling Bee</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+:root {
+    --bg: #ffffff;
+    --text: #222;
+    --tile: #eaeaea;
+    --tile-center: #ffcf33;
+    --accent: #333;
+    --good: #4caf50;
+    --bad: #e53935;
+    --radius: 14px;
+    --transition: 0.2s ease;
+}
+
+/* -------- THEME: FOREST -------- */
+.theme-forest {
+    --bg: #2c3a2f;
+    --text: #e6f5e6;
+    --tile: #3f5244;
+    --tile-center: #8bc34a;
+    --accent: #a5d6a7;
+}
+
+/* -------- THEME: EDURARY -------- */
+.theme-edurary {
+    --bg: #f7f9fa;
+    --text: #222;
+    --tile: #e3edff;
+    --tile-center: #0070c7;
+    --accent: #1e90ff;
+}
+
+/* -------- THEME: NYT -------- */
+.theme-nyt {
+    --bg: #ffffff;
+    --text: #111;
+    --tile: #f7f7f7;
+    --tile-center: #ffcf33;
+    --accent: #222;
+}
+
+/* -------- THEME: DARK -------- */
+.theme-dark {
+    --bg: #1e1e2e;
+    --text: #cdd6f4;
+    --tile: #45475a;
+    --tile-center: #fab387;
+    --accent: #89b4fa;
+}
+
+/* -------- THEME: NEON -------- */
+.theme-neon {
+    --bg: #000000;
+    --text: #ffffff;
+    --tile: #111;
+    --tile-center: #ff0088;
+    --accent: #00eaff;
+}
+
+/* ============================================================
+   GLOBAL LAYOUT
+   ============================================================ */
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Poppins", sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 600px;
+    margin: auto;
+    text-align: center;
+}
+
+h1 {
+    font-weight: 800;
+    font-size: 34px;
+    margin-bottom: 10px;
+}
+
+/* Theme selector */
+.theme-picker {
+    margin-bottom: 20px;
+}
+.theme-picker select {
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+/* ============================================================
+   HEX GRID
+   ============================================================ */
+.hex-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-template-rows: repeat(3, 100px);
+    gap: 10px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.hex {
+    background: var(--tile);
+    width: 100px;
+    height: 100px;
+    border-radius: 16px;
+    font-size: 32px;
+    font-weight: 800;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.hex-center {
+    background: var(--tile-center);
+    box-shadow: 0 0 14px rgba(0,0,0,0.3);
+}
+
+/* ============================================================
+   INPUT + KEYBOARD
+   ============================================================ */
+#wordInput {
+    margin-top: 10px;
+    padding: 14px;
+    width: 80%;
+    font-size: 22px;
+    border-radius: 8px;
+    border: none;
+}
+
+.keyboard {
+    margin-top: 15px;
+}
+
+.k-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+
+.key {
+    background: var(--tile);
+    padding: 12px 18px;
+    margin: 3px;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.key:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* ============================================================
+   FOUND WORDS
+   ============================================================ */
+#foundList {
+    text-align: left;
+    margin-top: 20px;
+    font-size: 18px;
+}
+
+.msg {
+    margin-top: 10px;
+    font-weight: 600;
+    color: var(--accent);
+}
+</style>
+</head>
+
+<body class="theme-forest">
+<div class="container">
+
+    <h1>Hex Spelling Bee</h1>
+
+    <!-- Theme Picker -->
+    <div class="theme-picker">
+        <select id="themeSelect">
+            <option value="theme-forest">Forest</option>
+            <option value="theme-edurary">Edurary Blue</option>
+            <option value="theme-nyt">NYT Yellow</option>
+            <option value="theme-dark">Dark</option>
+            <option value="theme-neon">Neon</option>
+        </select>
+    </div>
+
+    <!-- Hex Grid -->
+    <div class="hex-grid" id="hexGrid"></div>
+
+    <!-- Input -->
+    <input id="wordInput" placeholder="Enter a word..." />
+
+    <!-- Keyboard -->
+    <div class="keyboard" id="keyboard"></div>
+
+    <!-- Found Words -->
+    <div id="foundList"></div>
+</div>
+
+<script>
+/* ============================================================
+   1. THEMES
+   ============================================================ */
+document.getElementById("themeSelect").addEventListener("change", e => {
+    document.body.className = e.target.value;
+});
+
+/* ============================================================
+   2. LETTER SET (default letters)
+   ============================================================ */
+let letters = ["A","B","C","D","E","F","G"]; // center = index 3
+let centerLetter = "D";
+
+/* ============================================================
+   3. RENDER HEX GRID
+   ============================================================ */
+function renderGrid() {
+    const grid = document.getElementById("hexGrid");
+    grid.innerHTML = "";
+
+    letters.forEach((l, i) => {
+        const div = document.createElement("div");
+        div.className = "hex" + (i === 3 ? " hex-center" : "");
+        div.textContent = l;
+        div.dataset.letter = l.toLowerCase();
+        div.onclick = () => {
+            const inp = document.getElementById("wordInput");
+            inp.value += l.toLowerCase();
+        };
+        grid.appendChild(div);
+    });
+}
+renderGrid();
+
+/* ============================================================
+   4. KEYBOARD
+   ============================================================ */
+const keyboardRows = [
+    "qwertyuiop",
+    "asdfghjkl",
+    "zxcvbnm"
+];
+
+function renderKeyboard() {
+    const kb = document.getElementById("keyboard");
+    kb.innerHTML = "";
+
+    keyboardRows.forEach(row => {
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "k-row";
+
+        for (let char of row) {
+            const key = document.createElement("div");
+            key.className = "key";
+            key.textContent = char.toUpperCase();
+            key.onclick = () => {
+                const inp = document.getElementById("wordInput");
+                inp.value += char;
+            };
+            rowDiv.appendChild(key);
+        }
+
+        kb.appendChild(rowDiv);
+    });
+
+    // Add Enter + Backspace
+    const ctrlRow = document.createElement("div");
+    ctrlRow.className = "k-row";
+
+    const enter = document.createElement("div");
+    enter.className = "key";
+    enter.textContent = "ENTER";
+    enter.onclick = checkWord;
+
+    const back = document.createElement("div");
+    back.className = "key";
+    back.textContent = "⌫";
+    back.onclick = () => {
+        const inp = document.getElementById("wordInput");
+        inp.value = inp.value.slice(0, -1);
+    };
+
+    ctrlRow.appendChild(enter);
+    ctrlRow.appendChild(back);
+    kb.appendChild(ctrlRow);
+}
+renderKeyboard();
+
+/* ============================================================
+   5. LOAD DICTIONARY
+   ============================================================ */
+let DICTIONARY = [];
+
+fetch("dictionary.json")
+    .then(r => r.json())
+    .then(data => {
+        DICTIONARY = data.words;
+        console.log("Loaded dictionary:", data.count, "words");
+    });
+
+/* ============================================================
+   6. WORD CHECKING
+   ============================================================ */
+let foundWords = [];
+let score = 0;
+
+document.getElementById("wordInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") checkWord();
+});
+
+function checkWord() {
+    let word = document.getElementById("wordInput").value.trim().toLowerCase();
+    document.getElementById("wordInput").value = "";
+
+    if (!word) return;
+
+    // Must be 4+ letters
+    if (word.length < 4) return showMsg(word.toUpperCase() + " — too short");
+
+    // Must include center letter
+    if (!word.includes(centerLetter.toLowerCase()))
+        return showMsg(word.toUpperCase() + " — missing center letter");
+
+    // Must be in dictionary
+    if (!DICTIONARY.includes(word))
+        return showMsg(word.toUpperCase() + " — not in dictionary");
+
+    // Must not repeat
+    if (foundWords.includes(word))
+        return showMsg(word.toUpperCase() + " — already found");
+
+    foundWords.push(word);
+
+    // Score
+    let pts = word.length;
+    if (isPangram(word)) pts += 10;
+
+    score += pts;
+
+    updateFoundList();
+    showMsg(word.toUpperCase() + " ✓ +" + pts);
+}
+
+/* ============================================================
+   7. PANGRAM
+   ============================================================ */
+function isPangram(word) {
+    return letters.every(l => word.includes(l.toLowerCase()));
+}
+
+/* ============================================================
+   8. FOUND LIST
+   ============================================================ */
+function updateFoundList() {
+    const box = document.getElementById("foundList");
+    box.innerHTML = `<strong>Score:</strong> ${score}<br><br>` +
+        foundWords.map(w => "• " + w).join("<br>");
+}
+
+/* ============================================================
+   9. MESSAGES
+   ============================================================ */
+function showMsg(txt) {
+    const box = document.getElementById("foundList");
+    const div = document.createElement("div");
+    div.className = "msg";
+    div.textContent = txt;
+    box.prepend(div);
+}
+</script>
+
+</body>
+</html>
